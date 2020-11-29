@@ -33,7 +33,7 @@ mainloop:
     lui x11, 0b1000000000000000
     bgeu x10, x11, xOrO
     jal x0, checkDraw 
-	 # loop until reset asserted
+	beq x0, x0, main # loop until reset asserted
 
 drawArena: 
     # values to write to memory to draw grid arena
@@ -65,12 +65,12 @@ drawArena:
     ret              # PC -> x1 (return address)
 
 xOrO:
-    andi x23, x10, 0b100000000
+    addi x11, x0, 0b100000000
+    and x23, x10, x11
     bne x23, x0, writeX
     beq x23, x0, writeO
 
 checkWin:
-    or x18, x22, x23
     beq x18, x24, win
     beq x18, x25, win
     beq x18, x26, win
@@ -84,18 +84,14 @@ checkWin:
 win:
 #TODO: print WIN then stay here
 
-a: jal zero, a
-
 checkDraw: 
     or x18, x22, x23
     addi x19, x0, 0b111111111
-    bne x18, x19, mainloop
+    bne x18, x19, mainLoop
     jal x0, draw
 
 draw:
 #TODO: print DRAW then stay here
-
-b: jal zero, b
 
 writeX:
     lh x10, 0xc(x15)
@@ -159,12 +155,8 @@ xTopLeft:
     # store new value with x to memory
     sw x6, 48(x2)
     # load current state to registers
-    lw x16, 48(x2) 
-
-    #update gamestate and check if there is a winner
-    addi x11, x0, 0b000000001
-    or x22, x22, x11
-    jal x0, checkWin
+    lw x16, 48(x2)  
+    ret
 
 oTopLeft:
     # create new line to add o to existing drawing
@@ -175,10 +167,7 @@ oTopLeft:
     # load current state to registers
     lw x16, 48(x2)  
     lw x17, 52(x2)
-    
-    addi x11, x0, 0b000000001
-    or x23, x23, x11
-    jal x0, checkWin
+    ret
 
 xTopCentre:
     # create new line to add x to existing drawing
@@ -187,10 +176,7 @@ xTopCentre:
     sw x6, 48(x2)
     # load current state to registers
     lw x16, 48(x2)  
-
-    addi x11, x0, 0b000000010
-    or x22, x22, x11
-    jal x0, checkWin
+    ret
 
 oTopCentre:
     # create new line to add o to existing drawing
@@ -201,10 +187,7 @@ oTopCentre:
     # load current state to registers
     lw x16, 48(x2)  
     lw x17, 52(x2)
-    
-    addi x11, x0, 0b000000010
-    or x23, x23, x11
-    jal x0, checkWin
+    ret
 
 xTopRight:
     # create new line to add x to existing drawing
@@ -213,10 +196,7 @@ xTopRight:
     sw x6, 48(x2)
     # load current state to registers
     lw x16, 48(x2)  
-
-    addi x11, x0, 0b000000100
-    or x22, x22, x11
-    jal x0, checkWin
+    ret
 
 oTopRight:
     # create new line to add o to existing drawing
@@ -227,10 +207,7 @@ oTopRight:
     # load current state to registers
     lw x16, 48(x2)  
     lw x17, 52(x2)
-    
-    addi x11, x0, 0b000000100
-    or x23, x23, x11
-    jal x0, checkWin
+    ret
 
 xMiddleLeft:
     # create new line to add x to existing drawing
@@ -239,10 +216,7 @@ xMiddleLeft:
     sw x6, 28(x2)
     # load current state to registers
     lw x14, 28(x2)  
-    
-    addi x11, x0, 0b000001000
-    or x22, x22, x11
-    jal x0, checkWin
+    ret
 
 oMiddleLeft:
     # create new line to add o to existing drawing
@@ -253,10 +227,7 @@ oMiddleLeft:
     # load current state to registers
     lw x14, 28(x2)  
     lw x15, 32(x2)
-    
-    addi x11, x0, 0b000001000
-    or x23, x23, x11
-    jal x0, checkWin
+    ret
 
 xMiddleCentre:
     # create new line to add x to existing drawing
@@ -265,10 +236,7 @@ xMiddleCentre:
     sw x6, 28(x2)
     # load current state to registers
     lw x14, 28(x2)  
-    
-    addi x11, x0, 0b000010000
-    or x22, x22, x11
-    jal x0, checkWin
+    ret
 
 oMiddleCentre:
     # create new line to add o to existing drawing
@@ -279,10 +247,7 @@ oMiddleCentre:
     # load current state to registers
     lw x14, 28(x2)  
     lw x15, 32(x2)
-    
-    addi x11, x0, 0b000010000
-    or x23, x23, x11
-    jal x0, checkWin
+    ret
 
 xMiddleRight:
     # create new line to add x to existing drawing
@@ -291,10 +256,7 @@ xMiddleRight:
     sw x6, 28(x2)
     # load current state to registers
     lw x14, 28(x2)  
-    
-    addi x11, x0, 0b000100000
-    or x22, x22, x11
-    jal x0, checkWin
+    ret
 
 oMiddleRight:
     # create new line to add o to existing drawing
@@ -305,10 +267,7 @@ oMiddleRight:
     # load current state to registers
     lw x14, 28(x2)  
     lw x15, 32(x2)
-    
-    addi x11, x0, 0b000100000
-    or x23, x23, x11
-    jal x0, checkWin
+    ret
 
 xBottomLeft:
     # create new line to add x to existing drawing
@@ -317,10 +276,7 @@ xBottomLeft:
     sw x6,  8(x2)
     # load current state to registers
     lw x12, 8(x2)  
-    
-    addi x11, x0,  0b001000000
-    or x22, x22, x11
-    jal x0, checkWin
+    ret
 
 oBottomLeft:
     # create new line to add o to existing drawing
@@ -331,10 +287,7 @@ oBottomLeft:
     # load current state to registers
     lw x12, 8(x2)  
     lw x13, 12(x2)  
-    
-    addi x11, x0, 0b001000000
-    or x23, x23, x11
-    jal x0, checkWin
+    ret
 
 xBottomCentre:
     # create new line to add x to existing drawing
@@ -343,10 +296,7 @@ xBottomCentre:
     sw x6,  8(x2)
     # load current state to registers
     lw x12, 8(x2)  
-    
-    addi x11, x0, 0b010000000
-    or x22, x22, x11
-    jal x0, checkWin
+    ret
 
 oBottomCentre:
     # create new line to add o to existing drawing
@@ -357,10 +307,7 @@ oBottomCentre:
     # load current state to registers
     lw x12, 8(x2)  
     lw x13, 12(x2)  
-    
-    addi x11, x0, 0b010000000
-    or x23, x23, x11
-    jal x0, checkWin
+    ret
 
 xBottomRight:
     # create new line to add x to existing drawing
@@ -369,10 +316,7 @@ xBottomRight:
     sw x6,  8(x2)
     # load current state to registers
     lw x12, 4(x2)   
-    
-    addi x11, x0, 0b100000000
-    or x22, x22, x11
-    jal x0, checkWin
+    ret
 
 oBottomRight:
     # create new line to add o to existing drawing
@@ -383,7 +327,4 @@ oBottomRight:
     # load current state to registers
     lw x12, 8(x2)  
     lw x13, 12(x2)  
-    
-    addi x11, x0, 0b100000000
-    or x23, x23, x11
-    jal x0, checkWin
+    ret
