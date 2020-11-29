@@ -28,9 +28,9 @@ mainLoop:
 
 xOrO:
     addi x11, x0, 0b100000000
-    and x12, x10, x11
-    bne x12, x0, writeX
-    beq x12, x0, writeO
+    and x17, x10, x11
+    bne x17, x0, writeX
+    beq x17, x0, writeO
 
 checkDraw: 
     or x18, x16, x17
