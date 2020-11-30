@@ -24,7 +24,6 @@ lui x20, 0x0010
 mainLoop:
     addi x10, x0, 0
     lw x10, 0xc(x20)
-    sw x10, 0(x2)
     lui x11, 0b1000
     bgeu x10, x11, xOrO
     jal x0, checkDraw 
@@ -67,6 +66,7 @@ xOrO:
 
 checkWin:
     sw x18, 60(x2)
+    sw x23, 0(x2)
     beq x18, x24, win
     beq x18, x25, win
     beq x18, x26, win
@@ -337,7 +337,6 @@ oMiddleRight:
     or x6, x14, x9
     addi x11, x0, 0b000100000
     or x23, x23, x11
-    addi x18, x23, 0
     jal x0 oMiddleStoreLoad
 
 oMiddleStoreLoad:
@@ -347,6 +346,7 @@ oMiddleStoreLoad:
     # load current state to registers
     lw x14, 28(x2)  
     lw x15, 32(x2)
+    addi x18, x23, 0
     jal x0 checkWin
 
 oBottomLeft:
