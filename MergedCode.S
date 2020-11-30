@@ -35,21 +35,7 @@ drawArena:
     lui x5, 0x200
     addi x5, x5, 0x400      # Column data value to be stored in memory array 
     addi x6, x0, -1         # Row data value to be stored in memory array
-    #clear memory array
-    sw x0,  4(x2)    
-    sw x0,  8(x2)    
-    sw x0, 12(x2)   
-    sw x0, 16(x2)   
-    sw x0, 20(x2)   
-    sw x0, 24(x2)   
-    sw x0, 28(x2)   
-    sw x0, 32(x2)   
-    sw x0, 36(x2)   
-    sw x0, 40(x2)   
-    sw x0, 44(x2)   
-    sw x0, 48(x2)   
-    sw x0, 52(x2)   
-    sw x0, 56(x2)  
+
     # store grid arena design in memory
     sw x5,  4(x2)    
     sw x5,  8(x2)    
@@ -93,8 +79,7 @@ checkWin:
 
 # write "WIN" on screen and loop until rst asserted
 win:
-    sw x0, 44(x2)
-    sw x0, 20(x2)
+    jal x1, clearBoard
     lui x10, 0x923E
     addi x10, x10, 0x310
     sw x10, 40(x2)
@@ -120,8 +105,7 @@ checkDraw:
 
 # write "DRAW" on screen and loop until rst asserted
 draw:
-    sw x0, 44(x2)
-    sw x0, 20(x2)
+    jal x1, clearBoard
     lui x10, 0x1C704
     addi x10, x10, 0x248
     sw x10, 40(x2)
@@ -138,6 +122,20 @@ draw:
     addi x10, x10, 0x0E0
     sw x10, 24(x2)
     c: jal zero, c
+
+clearBoard:
+    sw x0, 60(x2)
+    sw x0, 56(x2)
+    sw x0, 52(x2)
+    sw x0, 48(x2)
+    sw x0, 44(x2)
+    sw x0, 20(x2)
+    sw x0, 16(x2)
+    sw x0, 12(x2)
+    sw x0,  8(x2)
+    sw x0,  4(x2)
+    sw x0,  0(x2)
+    ret
 
 writeX:
     lb x10, 0xc(x20)
@@ -285,13 +283,15 @@ xBottomStoreLoad:
 
 oTopLeft:
     # create new line to add o to existing drawing
+    or x5, x17, x7
     or x6, x16, x7
     addi x11, x0, 0b000000001
     or x23, x23, x11
     jal x0 oTopStoreLoad
 
-oTopCentre:
+oTopCentre: 
     # create new line to add o to existing drawing
+    or x5, x17, x8
     or x6, x16, x8
     addi x11, x0, 0b000000010
     or x23, x23, x11
@@ -299,6 +299,7 @@ oTopCentre:
 
 oTopRight:
     # create new line to add o to existing drawing
+    or x5, x17, x9
     or x6, x16, x9
     addi x11, x0, 0b000000100
     or x23, x23, x11
@@ -307,7 +308,7 @@ oTopRight:
 oTopStoreLoad:
     # store new value with o to memory
     sw x6, 48(x2)
-    sw x6, 52(x2)
+    sw x5, 52(x2)
     # load current state to registers
     lw x16, 48(x2)  
     lw x17, 52(x2)
@@ -316,6 +317,7 @@ oTopStoreLoad:
 
 oMiddleLeft:
     # create new line to add o to existing drawing
+    or x5, x15, x7
     or x6, x14, x7
     addi x11, x0, 0b000001000
     or x23, x23, x11
@@ -323,6 +325,7 @@ oMiddleLeft:
 
 oMiddleCentre:
     # create new line to add o to existing drawing
+    or x5, x15, x8
     or x6, x14, x8
     addi x11, x0, 0b000010000
     or x23, x23, x11
@@ -330,6 +333,7 @@ oMiddleCentre:
 
 oMiddleRight:
     # create new line to add o to existing drawing
+    or x5, x15, x9
     or x6, x14, x9
     addi x11, x0, 0b000100000
     or x23, x23, x11
@@ -339,7 +343,7 @@ oMiddleRight:
 oMiddleStoreLoad:
     # store new value with o to memory
     sw x6, 28(x2)
-    sw x6, 32(x2)
+    sw x5, 32(x2)
     # load current state to registers
     lw x14, 28(x2)  
     lw x15, 32(x2)
@@ -347,6 +351,7 @@ oMiddleStoreLoad:
 
 oBottomLeft:
     # create new line to add o to existing drawing
+    or x5, x13, x7
     or x6, x12, x7
     addi x11, x0, 0b001000000
     or x23, x23, x11
@@ -354,6 +359,7 @@ oBottomLeft:
 
 oBottomCentre:
     # create new line to add o to existing drawing
+    or x5, x13, x8
     or x6, x12, x8
     addi x11, x0, 0b010000000
     or x23, x23, x11
@@ -361,6 +367,7 @@ oBottomCentre:
 
 oBottomRight:
     # create new line to add o to existing drawing
+    or x5, x13, x9
     or x6, x12, x9
     addi x11, x0, 0b100000000
     or x23, x23, x11
@@ -369,7 +376,7 @@ oBottomRight:
 oBottomStoreLoad:
     # store new value with o to memory
     sw x6, 8(x2)
-    sw x6, 12(x2)
+    sw x5, 12(x2)
     # load current state to registers
     lw x12, 8(x2)  
     lw x13, 12(x2)  
