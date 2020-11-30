@@ -13,33 +13,43 @@ addi x28, x0, 0b001010100
 addi x29, x0, 0b100100100
 addi x30, x0, 0b010010010
 addi x31, x0, 0b001001001
-# addi x24, x0, 0b10000000
-# addi x25, x0, 0b1000000
-# addi x26, x0, 0b100000
-# addi x27, x0, 0b10000
-# addi x28, x0, 0b1000
-# addi x29, x0, 0b100
-# addi x30, x0, 0b10
-# addi x31, x0, 0b1
 
 # initialise gamestate registers for X and O to 0.
 addi x22, x0, 0
 addi x23, x0, 0
-
 jal x1, drawArena # function to draw grid in LED array
 
+lui x20, 0x0010
+
 mainLoop:
-    lw x10, 0xc(x15)
-    lui x11, 0b1000000000000000
+    addi x10, x0, 0
+    lw x10, 0xc(x20)
+    sw x10, 0(x2)
+    lui x11, 0b1000
     bgeu x10, x11, xOrO
     jal x0, checkDraw 
-	beq x0, x0, mainLoop # loop until reset asserted
+	jal x0, mainLoop # loop until reset asserted
 
 drawArena: 
     # values to write to memory to draw grid arena
     lui x5, 0x200
     addi x5, x5, 0x400      # Column data value to be stored in memory array 
     addi x6, x0, -1         # Row data value to be stored in memory array
+    #clear memory array
+    sw x0,  4(x2)    
+    sw x0,  8(x2)    
+    sw x0, 12(x2)   
+    sw x0, 16(x2)   
+    sw x0, 20(x2)   
+    sw x0, 24(x2)   
+    sw x0, 28(x2)   
+    sw x0, 32(x2)   
+    sw x0, 36(x2)   
+    sw x0, 40(x2)   
+    sw x0, 44(x2)   
+    sw x0, 48(x2)   
+    sw x0, 52(x2)   
+    sw x0, 56(x2)  
     # store grid arena design in memory
     sw x5,  4(x2)    
     sw x5,  8(x2)    
@@ -66,8 +76,8 @@ drawArena:
 
 xOrO:
     andi x23, x10, 0b100000000
-    bne x23, x0, writeX
-    beq x23, x0, writeO
+    bne x23, x0, writeO
+    beq x23, x0, writeX
 
 checkWin:
     beq x18, x24, win
@@ -129,7 +139,7 @@ draw:
     c: jal zero, c
 
 writeX:
-    lh x10, 0xc(x15)
+    lb x10, 0xc(x20)
     addi x11, x0, 0b10000000
     bgeu x10, x11, xBottomRight
 
@@ -157,7 +167,7 @@ writeX:
     jal x0 xTopLeft
 
 writeO:
-    lh x10, 0xc(x15)
+    lb x10, 0xc(x20)
     addi x11, x0, 0b10000000
     bgeu x10, x11, oBottomRight
 
