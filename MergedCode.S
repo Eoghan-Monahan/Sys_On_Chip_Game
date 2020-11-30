@@ -45,7 +45,7 @@ drawArena:
     sw x5, 48(x2)   
     sw x5, 52(x2)   
     sw x5, 56(x2)  
-    # store state of crucial rows in registers
+    #store state of crucial rows in registers
     lw x12,  8(x2)     
     lw x13, 12(x2)  
     lw x14, 28(x2)    
@@ -90,23 +90,17 @@ checkWin:
 
 # write "WIN" on screen and loop until rst asserted
 win:
-    jal x1, clearBoard
-    lui x10, 0x923E
-    addi x10, x10, 0x310
+    lui x10, 0b00010101011111011001
     sw x10, 40(x2)
-    lui x10, 0x9208
-    addi x10, x10, 0x290
+    lui x10, 0b00010101000100011101
     sw x10, 36(x2)
-    lui x10, 0x5408
-    addi x10, x10, 0x2D0
+    lui x10, 0b00010101000100010101
     sw x10, 32(x2)
-    lui x10, 0x5408
-    addi x10, x10, 0x250
+    lui x10, 0b00010101000100010111
     sw x10, 28(x2)
-    lui x10, 0x383E
-    addi x10, x10, 0x230
+    lui x10, 0b00001110011111010011
     sw x10, 24(x2)
-    b: jal zero, b
+    jal x1, clearBoard
 
 checkDraw: 
     or x10, x22, x23
@@ -116,26 +110,20 @@ checkDraw:
 
 # write "DRAW" on screen and loop until rst asserted
 draw:
-    jal x1, clearBoard
-    lui x10, 0x1C704
-    addi x10, x10, 0x248
+    lui x10, 0b00011001100010010101
     sw x10, 40(x2)
-    lui x10, 0x1248A
-    addi x10, x10, 0x248
+    lui x10, 0b00010101010101010101
     sw x10, 36(x2)
-    lui x10, 0x1270E
-    addi x10, x10, 0x150
+    lui x10, 0b00010101100111010101
     sw x10, 32(x2)
-    lui x10, 0x12511
-    addi x10, x10, 0x150
+    lui x10, 0b00010101100101010101
     sw x10, 28(x2)
-    lui x10, 0x1C491
-    addi x10, x10, 0x0E0
+    lui x10, 0b00011001010101001110
     sw x10, 24(x2)
-    c: jal zero, c
+    jal x1, clearBoard
 
 clearBoard:
-
+    #sw x0, 60(x2)
     sw x0, 56(x2)
     sw x0, 52(x2)
     sw x0, 48(x2)
@@ -145,8 +133,8 @@ clearBoard:
     sw x0, 12(x2)
     sw x0,  8(x2)
     sw x0,  4(x2)
-
-    ret
+    #sw x0,  0(x2)
+    a: jal zero, a
 
 writeX:
     lb x10, 0xc(x20)
@@ -288,7 +276,7 @@ xBottomStoreLoad:
     # store new value with x to memory
     sw x6,  8(x2)
     # load current state to registers
-    lw x12, 4(x2)   
+    lw x12, 8(x2)   
     addi x18, x22, 0
     jal x0 checkWin
 
