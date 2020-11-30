@@ -14,20 +14,15 @@ addi x29, x0, 0b100100100
 addi x30, x0, 0b010010010
 addi x31, x0, 0b001001001
 
-# initialise gamestate registers for X and O to 0.
-addi x22, x0, 0
-addi x23, x0, 0
 jal x1, drawArena # function to draw grid in LED array
 
 lui x20, 0x0010
 
 mainLoop:
-    addi x10, x0, 0
     lw x10, 0xc(x20)
     lui x11, 0b1000
     bgeu x10, x11, xOrO
     jal x0, checkDraw 
-	jal x0, mainLoop # loop until reset asserted
 
 drawArena: 
     # values to write to memory to draw grid arena
@@ -64,17 +59,33 @@ xOrO:
     bne x11, x0, writeO
     beq x11, x0, writeX
 
+
+#Compare current board state to each win state
 checkWin:
-    sw x18, 60(x2)
-    sw x23, 0(x2)
-    beq x18, x24, win
-    beq x18, x25, win
-    beq x18, x26, win
-    beq x18, x27, win
-    beq x18, x28, win
-    beq x18, x29, win
-    beq x18, x30, win
-    beq x18, x31, win
+    and x19, x18, x24
+    beq x19, x24, win
+
+    and x19, x18, x25
+    beq x19, x25, win
+
+    and x19, x18, x26
+    beq x19, x26, win
+
+    and x19, x18, x27
+    beq x19, x27, win
+
+    and x19, x18, x28
+    beq x19, x28, win
+
+    and x19, x18, x29
+    beq x19, x29, win
+
+    and x19, x18, x30
+    beq x19, x30, win
+
+    and x19, x18, x31
+    beq x19, x31, win
+
     jal x0, checkDraw
 
 # write "WIN" on screen and loop until rst asserted
@@ -124,7 +135,7 @@ draw:
     c: jal zero, c
 
 clearBoard:
-    sw x0, 60(x2)
+
     sw x0, 56(x2)
     sw x0, 52(x2)
     sw x0, 48(x2)
@@ -134,7 +145,7 @@ clearBoard:
     sw x0, 12(x2)
     sw x0,  8(x2)
     sw x0,  4(x2)
-    sw x0,  0(x2)
+
     ret
 
 writeX:
