@@ -75,11 +75,12 @@ drawArena:
     ret              # PC -> x1 (return address)
 
 xOrO:
-    andi x23, x10, 0b100000000
-    bne x23, x0, writeO
-    beq x23, x0, writeX
+    andi x11, x10, 0b100000000
+    bne x11, x0, writeO
+    beq x11, x0, writeX
 
 checkWin:
+    sw x18, 60(x2)
     beq x18, x24, win
     beq x18, x25, win
     beq x18, x26, win
@@ -112,9 +113,9 @@ win:
     b: jal zero, b
 
 checkDraw: 
-    or x18, x22, x23
+    or x10, x22, x23
     addi x19, x0, 0b111111111
-    bne x18, x19, mainLoop
+    bne x10, x19, mainLoop
     jal x0, draw
 
 # write "DRAW" on screen and loop until rst asserted
@@ -221,6 +222,7 @@ xTopStoreLoad:
     sw x6, 48(x2)
     # load current state to registers
     lw x16, 48(x2)  
+    addi x18, x22, 0
     jal x0 checkWin
 
 xMiddleLeft:
@@ -249,6 +251,7 @@ xMiddleStoreLoad:
     sw x6, 28(x2)
     # load current state to registers
     lw x14, 28(x2)  
+    addi x18, x22, 0
     jal x0 checkWin
 
 xBottomLeft:
@@ -277,6 +280,7 @@ xBottomStoreLoad:
     sw x6,  8(x2)
     # load current state to registers
     lw x12, 4(x2)   
+    addi x18, x22, 0
     jal x0 checkWin
 
 oTopLeft:
@@ -307,6 +311,7 @@ oTopStoreLoad:
     # load current state to registers
     lw x16, 48(x2)  
     lw x17, 52(x2)
+    addi x18, x23, 0
     jal x0 checkWin
 
 oMiddleLeft:
@@ -328,6 +333,7 @@ oMiddleRight:
     or x6, x14, x9
     addi x11, x0, 0b000100000
     or x23, x23, x11
+    addi x18, x23, 0
     jal x0 oMiddleStoreLoad
 
 oMiddleStoreLoad:
@@ -367,4 +373,5 @@ oBottomStoreLoad:
     # load current state to registers
     lw x12, 8(x2)  
     lw x13, 12(x2)  
+    addi x18, x23, 0
     jal x0 checkWin
