@@ -1,10 +1,25 @@
+# Register usages:
+# x0: always zero
+# x1: call return address
+# x2: stack pointer
+# x3: global pointer
+# x4: thread pointer
+# x5,x6: used to draw grid and add X/O 
+# x7,x8,x9: used to draw X/O
+# x10,x11: store temporary values for use in functions
+# x12 - x17: store crucial memory states
+# x18,x19: used to check for win/draw
+# x20: store address for inport read
+# x21: unused
+# x22,x23: store location of placed Xs/Os
+# x24 - x31: store win states
 
-# values required to draw x/o markers
+# Values required to draw x/o markers
 lui x7, 0x1E000         # left x/o
 lui x8, 0x3C            # middle x/o
 addi x9, x0, 0x78       # right x/o
 
-# win states being stored for later use
+# Win states being stored for later use
 addi x24, x0, 0b000000111
 addi x25, x0, 0b000111000
 addi x26, x0, 0b111000000
@@ -14,12 +29,12 @@ addi x29, x0, 0b100100100
 addi x30, x0, 0b010010010
 addi x31, x0, 0b001001001
 
-jal x1, drawArena # function to draw grid in LED array
+jal x1, drawArena # Function to draw grid in LED array
 
-lui x20, 0x0010 #store address for inport read
+lui x20, 0x0010 # Store address for inport read
 
-#read inport, call xOrO if MSB of inport asserted. 
-#Check for a draw otherwise
+# Read inport, call xOrO if MSB of inport asserted. 
+# Check for a draw otherwise
 mainLoop:
     lw x10, 0xc(x20)
     lui x11, 0b1000
@@ -27,12 +42,12 @@ mainLoop:
     jal x0, checkDraw 
 
 drawArena: 
-    # values to write to memory to draw grid arena
+    # Values to write to memory to draw grid arena
     lui x5, 0x200
     addi x5, x5, 0x400      # Column data value to be stored in memory array 
     addi x6, x0, -1         # Row data value to be stored in memory array
 
-    # store grid arena design in memory
+    # Store grid arena design in memory
     sw x5,  4(x2)    
     sw x5,  8(x2)    
     sw x5, 12(x2)   
@@ -47,7 +62,7 @@ drawArena:
     sw x5, 48(x2)   
     sw x5, 52(x2)   
     sw x5, 56(x2)  
-    #store state of crucial rows in registers
+    # Store state of crucial rows in registers
     lw x12,  8(x2)     
     lw x13, 12(x2)  
     lw x14, 28(x2)    
@@ -56,13 +71,13 @@ drawArena:
     lw x17, 52(x2)
     ret              # PC -> x1 (return address)
 
-#check if the 9th bit is asserted. If it is, draw O. If not, draw X
+# Check if the 9th bit is asserted. If it is, draw O. If not, draw X
 xOrO:
     andi x11, x10, 0b100000000
     bne x11, x0, writeO
     beq x11, x0, writeX
 
-#Compare current board state to each win state
+# Compare current board state to each win state
 checkWin:
     and x19, x18, x24
     beq x19, x24, win
@@ -90,7 +105,7 @@ checkWin:
 
     jal x0, checkDraw
 
-# write "WIN" on screen and loop until rst asserted
+# Write "WIN" on screen and clear unused LED rows
 win:
     lui x10, 0b00010101011111011001
     sw x10, 40(x2)
@@ -104,16 +119,16 @@ win:
     sw x10, 24(x2)
     jal x1, clearBoard
 
-#OR together the 2 game state registers.
-#If 9 bits asserted, game board is full and it is a draw.
-#x22 contains the current locations of Xs, x23 for Os.
+# OR together the 2 game state registers.
+# If 9 bits asserted, game board is full and it is a draw.
+# x22 contains the current locations of Xs, x23 for Os.
 checkDraw: 
     or x10, x22, x23
     addi x19, x0, 0b111111111
     bne x10, x19, mainLoop
     jal x0, draw
 
-# write "DRAW" on screen and loop until rst asserted
+# Write "DRAW" on screen and clear unused LED rows
 draw:
     lui x10, 0b00011001100010010101
     sw x10, 40(x2)
@@ -127,8 +142,8 @@ draw:
     sw x10, 24(x2)
     jal x1, clearBoard
 
+# Clear unused LED rows and loop until rst asserted
 clearBoard:
-    #sw x0, 60(x2)
     sw x0, 56(x2)
     sw x0, 52(x2)
     sw x0, 48(x2)
@@ -138,11 +153,10 @@ clearBoard:
     sw x0, 12(x2)
     sw x0,  8(x2)
     sw x0,  4(x2)
-    #sw x0,  0(x2)
     a: jal zero, a
 
-#Read in byte and check as to which bit is asserted.
-#Use this information to select which zone to write to.
+# Read in byte and check as to which bit is asserted.
+# Use this information to select which zone to write to.
 writeX:
     lb x10, 0xc(x20)
     addi x11, x0, 0b10000000
@@ -199,11 +213,11 @@ writeO:
 
     jal x0 oTopLeft
 
-#adds X to top left zone of board. Updates game state.
+# Adds X to top left zone of board. Updates game state.
 xTopLeft:
-    # create new line to add x to existing drawing
+    # Create new line to add x to existing drawing
     or x6, x16, x7
-    #update gamestate
+    # Update gamestate
     addi x11, x0, 0b000000001
     or x22, x22, x11
     jal x0 xTopStoreLoad
@@ -220,12 +234,12 @@ xTopRight:
     or x22, x22, x11
     jal x0 xTopStoreLoad
 
-#writes X to top row.
-#Adds gamestate for X to register x18 to be checked by the checkwin function 
+# Writes X to top row.
+# Adds gamestate for X to register x18 to be checked by the checkwin function 
 xTopStoreLoad:
-    # store new value with x to memory
+    # Store new value with x to memory
     sw x6, 48(x2)
-    # load current state to registers
+    # Load current state to registers
     lw x16, 48(x2)  
     addi x18, x22, 0
     jal x0 checkWin
@@ -273,19 +287,19 @@ xBottomRight:
     jal x0 xBottomStoreLoad
 
 xBottomStoreLoad:
-    # store new value with x to memory
+    # Store new value with x to memory
     sw x6,  8(x2)
-    # load current state to registers
+    # Load current state to registers
     lw x12, 8(x2)   
     addi x18, x22, 0
     jal x0 checkWin
 
-#adds O to top left zone of board. Updates game state.
+# Adds O to top left zone of board. Updates game state.
 oTopLeft:
-    # create new line to add o to existing drawing
+    # Create new line to add o to existing drawing
     or x5, x17, x7
     or x6, x16, x7
-    #update current game state
+    # Update current game state
     addi x11, x0, 0b000000001
     or x23, x23, x11
     jal x0 oTopStoreLoad
@@ -304,16 +318,16 @@ oTopRight:
     or x23, x23, x11
     jal x0 oTopStoreLoad
     
-#writes O to top row.
-#Adds gamestate for O to register x18 to be checked by the checkwin function
+# Writes O to top row.
+# Adds gamestate for O to register x18 to be checked by the checkwin function
 oTopStoreLoad:
-    # store new value with o to memory
+    # Store new value with o to memory
     sw x6, 48(x2)
     sw x5, 52(x2)
-    # load current state to registers
+    # Load current state to registers
     lw x16, 48(x2)  
     lw x17, 52(x2)
-    #Add gamestate for X to register x18 to be checked by the checkwin function
+    # Add gamestate for X to register x18 to be checked by the checkwin function
     addi x18, x23, 0
     jal x0 checkWin
 
@@ -339,10 +353,10 @@ oMiddleRight:
     jal x0 oMiddleStoreLoad
 
 oMiddleStoreLoad:
-    # store new value with o to memory
+    # Store new value with o to memory
     sw x6, 28(x2)
     sw x5, 32(x2)
-    # load current state to registers
+    # Soad current state to registers
     lw x14, 28(x2)  
     lw x15, 32(x2)
     addi x18, x23, 0
@@ -370,10 +384,10 @@ oBottomRight:
     jal x0 oBottomStoreLoad
 
 oBottomStoreLoad:
-    # store new value with o to memory
+    # Store new value with o to memory
     sw x6, 8(x2)
     sw x5, 12(x2)
-    # load current state to registers
+    # Load current state to registers
     lw x12, 8(x2)  
     lw x13, 12(x2)  
     addi x18, x23, 0
