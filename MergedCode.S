@@ -16,8 +16,10 @@ addi x31, x0, 0b001001001
 
 jal x1, drawArena # function to draw grid in LED array
 
-lui x20, 0x0010
+lui x20, 0x0010 #store address for inport read
 
+#read inport, call xOrO if MSB of inport asserted. 
+#Check for a draw otherwise
 mainLoop:
     lw x10, 0xc(x20)
     lui x11, 0b1000
@@ -54,11 +56,11 @@ drawArena:
     lw x17, 52(x2)
     ret              # PC -> x1 (return address)
 
+#check if the 9th bit is asserted. If it is, draw O. If not, draw X
 xOrO:
     andi x11, x10, 0b100000000
     bne x11, x0, writeO
     beq x11, x0, writeX
-
 
 #Compare current board state to each win state
 checkWin:
@@ -102,6 +104,9 @@ win:
     sw x10, 24(x2)
     jal x1, clearBoard
 
+#OR together the 2 game state registers.
+#If 9 bits asserted, game board is full and it is a draw.
+#x22 contains the current locations of Xs, x23 for Os.
 checkDraw: 
     or x10, x22, x23
     addi x19, x0, 0b111111111
@@ -136,6 +141,8 @@ clearBoard:
     #sw x0,  0(x2)
     a: jal zero, a
 
+#Read in byte and check as to which bit is asserted.
+#Use this information to select which zone to write to.
 writeX:
     lb x10, 0xc(x20)
     addi x11, x0, 0b10000000
@@ -192,28 +199,29 @@ writeO:
 
     jal x0 oTopLeft
 
+#adds X to top left zone of board. Updates game state.
 xTopLeft:
     # create new line to add x to existing drawing
     or x6, x16, x7
-    #update gamestate and check if there is a winner
+    #update gamestate
     addi x11, x0, 0b000000001
     or x22, x22, x11
     jal x0 xTopStoreLoad
 
 xTopCentre:
-    # create new line to add x to existing drawing
     or x6, x16, x8
     addi x11, x0, 0b000000010
     or x22, x22, x11
     jal x0 xTopStoreLoad
 
 xTopRight:
-    # create new line to add x to existing drawing
     or x6, x16, x9
     addi x11, x0, 0b000000100
     or x22, x22, x11
     jal x0 xTopStoreLoad
 
+#writes X to top row.
+#Adds gamestate for X to register x18 to be checked by the checkwin function 
 xTopStoreLoad:
     # store new value with x to memory
     sw x6, 48(x2)
@@ -223,50 +231,42 @@ xTopStoreLoad:
     jal x0 checkWin
 
 xMiddleLeft:
-    # create new line to add x to existing drawing
     or x6, x14, x7
     addi x11, x0, 0b000001000
     or x22, x22, x11
     jal x0 xMiddleStoreLoad
 
 xMiddleCentre:
-    # create new line to add x to existing drawing
     or x6, x14, x8
     addi x11, x0, 0b000010000
     or x22, x22, x11
     jal x0 xMiddleStoreLoad
 
 xMiddleRight:
-    # create new line to add x to existing drawing
     or x6, x14, x9
     addi x11, x0, 0b000100000
     or x22, x22, x11
     jal x0 xMiddleStoreLoad
 
 xMiddleStoreLoad:
-    # store new value with x to memory
     sw x6, 28(x2)
-    # load current state to registers
     lw x14, 28(x2)  
     addi x18, x22, 0
     jal x0 checkWin
 
 xBottomLeft:
-    # create new line to add x to existing drawing
     or x6, x12, x7
     addi x11, x0,  0b001000000
     or x22, x22, x11
     jal x0 xBottomStoreLoad
 
 xBottomCentre:
-    # create new line to add x to existing drawing
     or x6, x12, x8
     addi x11, x0, 0b010000000
     or x22, x22, x11
     jal x0 xBottomStoreLoad
 
 xBottomRight:
-    # create new line to add x to existing drawing
     or x6, x12, x9
     addi x11, x0, 0b100000000
     or x22, x22, x11
@@ -280,16 +280,17 @@ xBottomStoreLoad:
     addi x18, x22, 0
     jal x0 checkWin
 
+#adds O to top left zone of board. Updates game state.
 oTopLeft:
     # create new line to add o to existing drawing
     or x5, x17, x7
     or x6, x16, x7
+    #update current game state
     addi x11, x0, 0b000000001
     or x23, x23, x11
     jal x0 oTopStoreLoad
 
 oTopCentre: 
-    # create new line to add o to existing drawing
     or x5, x17, x8
     or x6, x16, x8
     addi x11, x0, 0b000000010
@@ -297,13 +298,14 @@ oTopCentre:
     jal x0 oTopStoreLoad
 
 oTopRight:
-    # create new line to add o to existing drawing
     or x5, x17, x9
     or x6, x16, x9
     addi x11, x0, 0b000000100
     or x23, x23, x11
     jal x0 oTopStoreLoad
     
+#writes O to top row.
+#Adds gamestate for O to register x18 to be checked by the checkwin function
 oTopStoreLoad:
     # store new value with o to memory
     sw x6, 48(x2)
@@ -311,11 +313,11 @@ oTopStoreLoad:
     # load current state to registers
     lw x16, 48(x2)  
     lw x17, 52(x2)
+    #Add gamestate for X to register x18 to be checked by the checkwin function
     addi x18, x23, 0
     jal x0 checkWin
 
 oMiddleLeft:
-    # create new line to add o to existing drawing
     or x5, x15, x7
     or x6, x14, x7
     addi x11, x0, 0b000001000
@@ -323,7 +325,6 @@ oMiddleLeft:
     jal x0 oMiddleStoreLoad
 
 oMiddleCentre:
-    # create new line to add o to existing drawing
     or x5, x15, x8
     or x6, x14, x8
     addi x11, x0, 0b000010000
@@ -331,7 +332,6 @@ oMiddleCentre:
     jal x0 oMiddleStoreLoad
 
 oMiddleRight:
-    # create new line to add o to existing drawing
     or x5, x15, x9
     or x6, x14, x9
     addi x11, x0, 0b000100000
@@ -349,7 +349,6 @@ oMiddleStoreLoad:
     jal x0 checkWin
 
 oBottomLeft:
-    # create new line to add o to existing drawing
     or x5, x13, x7
     or x6, x12, x7
     addi x11, x0, 0b001000000
@@ -357,7 +356,6 @@ oBottomLeft:
     jal x0 oBottomStoreLoad
 
 oBottomCentre:
-    # create new line to add o to existing drawing
     or x5, x13, x8
     or x6, x12, x8
     addi x11, x0, 0b010000000
@@ -365,7 +363,6 @@ oBottomCentre:
     jal x0 oBottomStoreLoad
 
 oBottomRight:
-    # create new line to add o to existing drawing
     or x5, x13, x9
     or x6, x12, x9
     addi x11, x0, 0b100000000
